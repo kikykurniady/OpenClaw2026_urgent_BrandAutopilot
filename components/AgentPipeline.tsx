@@ -106,39 +106,68 @@ export function AgentPipeline({
   }, [progress, completedStep, activeIdx, apiDone, onAnimationComplete]);
 
   const current = AGENTS[Math.min(activeIdx, AGENTS.length - 1)];
+  const overallProgress = Math.min(
+    100,
+    Math.round(((activeIdx + progress / 100) / AGENTS.length) * 100),
+  );
 
   return (
     <div className="animate-fadeUp">
-      <div className="flex items-center gap-2 mb-4">
+      <div className="flex items-center gap-2 mb-4 flex-wrap">
         <span className="badge">
           <span className="w-1.5 h-1.5 rounded-full bg-primary animate-pulseDot" />
           Autonomous pipeline running
         </span>
+        <span className="badge !text-white/80">
+          Step {Math.min(activeIdx + 1, AGENTS.length)} of {AGENTS.length}
+        </span>
       </div>
-      <h2 className="font-display text-3xl sm:text-4xl font-extrabold tracking-tight text-white">
-        AI Agents working...
-      </h2>
+      <div className="flex items-end justify-between gap-4 flex-wrap">
+        <h2 className="font-display text-3xl sm:text-4xl font-extrabold tracking-tight text-white">
+          AI Agents working...
+        </h2>
+        <span className="font-display text-3xl font-extrabold text-primary tabular-nums">
+          {overallProgress}%
+        </span>
+      </div>
       <p className="mt-3 text-muted text-[15px] max-w-xl">
         {current.runningCopy}
       </p>
 
-      <div className="mt-8 grid gap-3">
-        {AGENTS.map((agent, idx) => {
-          const status: AgentStatus =
-            idx < activeIdx
-              ? "done"
-              : idx === activeIdx
-                ? "running"
-                : "waiting";
-          return (
-            <AgentRow
-              key={agent.id}
-              agent={agent}
-              status={status}
-              progress={status === "running" ? progress : status === "done" ? 100 : 0}
-            />
-          );
-        })}
+      {/* Overall progress bar */}
+      <div className="mt-5 h-[3px] w-full rounded-full bg-white/[0.05] overflow-hidden">
+        <div
+          className="h-full rounded-full bg-gradient-to-r from-primary via-accent-blue to-accent-green transition-[width] duration-200 ease-out"
+          style={{ width: `${overallProgress}%` }}
+        />
+      </div>
+
+      <div className="mt-8 relative">
+        {/* Vertical connector — shows the autonomous data handoff between agents */}
+        <span
+          aria-hidden
+          className="absolute left-[37px] top-6 bottom-6 w-px bg-gradient-to-b from-primary/60 via-border to-accent-green/60 pointer-events-none"
+        />
+        <div className="grid gap-3 relative">
+          {AGENTS.map((agent, idx) => {
+            const status: AgentStatus =
+              idx < activeIdx
+                ? "done"
+                : idx === activeIdx
+                  ? "running"
+                  : "waiting";
+            return (
+              <AgentRow
+                key={agent.id}
+                agent={agent}
+                status={status}
+                progress={
+                  status === "running" ? progress : status === "done" ? 100 : 0
+                }
+              />
+            );
+          })}
+        </div>
       </div>
     </div>
   );
